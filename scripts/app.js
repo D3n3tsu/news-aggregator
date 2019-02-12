@@ -67,7 +67,9 @@ APP.Main = (function() {
       story.innerHTML = html;
       story.addEventListener('click', onStoryClick.bind(this, details));
       story.classList.add('clickable');
-      colorizeAndScaleStory(story);
+    });
+    requestAnimationFrame(function() {
+      colorizeAndScaleStories();
     });
   }
 
@@ -240,15 +242,15 @@ APP.Main = (function() {
     var windowHeight = (window.innerHeight || document.documentElement.clientHeight);
     var bodyTop = document.body.getBoundingClientRect().top;
 
-function a(scoreNewWidthAndHeight, saturation, opacity, score, title){
-  requestAnimationFrame(function() {
-    score.style.width = scoreNewWidthAndHeight + 'px';
-    score.style.height = scoreNewWidthAndHeight + 'px';
-    score.style.lineHeight = scoreNewWidthAndHeight + 'px';
-    score.style.backgroundColor = 'hsl(42, ' + saturation + '%, 50%)';
-    title.style.opacity = opacity;
-  });
-}
+    function colorizeAndScaleStory(scoreNewWidthAndHeight, saturation, opacity, score, title){
+      requestAnimationFrame(function() {
+        score.style.width = scoreNewWidthAndHeight + 'px';
+        score.style.height = scoreNewWidthAndHeight + 'px';
+        score.style.lineHeight = scoreNewWidthAndHeight + 'px';
+        score.style.backgroundColor = 'hsl(42, ' + saturation + '%, 50%)';
+        title.style.opacity = opacity;
+      });
+    }
     // It does seem awfully broad to change all the
     // colors every time!
     for (var s = 0; s < storyElements.length; s++) {
@@ -266,21 +268,15 @@ function a(scoreNewWidthAndHeight, saturation, opacity, score, title){
         var opacity = scale;
         var scoreNewWidthAndHeight = (scale * 40);
         var saturation = (100 * ((scoreNewWidthAndHeight - 38) / 2));
-        a(scoreNewWidthAndHeight, saturation, opacity, score, title);
-        
+        colorizeAndScaleStory(scoreNewWidthAndHeight, saturation, opacity, score, title);
       }
     }
-  }
-
-  function colorizeAndScaleStory(story) {
-
   }
 
   main.addEventListener('scroll', function() {
 
     var header = $('header');
-
-    colorizeAndScaleStories();
+    requestAnimationFrame(colorizeAndScaleStories);
 
     // Add a shadow to the header.
     if (main.scrollTop > 70){
@@ -340,5 +336,4 @@ function a(scoreNewWidthAndHeight, saturation, opacity, score, title){
     loadStoryBatch();
     main.classList.remove('loading');
   });
-
 })();
