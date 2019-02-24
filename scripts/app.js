@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 APP.Main = (function() {
+//note 
+// change height and width to transform
+// change data viaworkers
+// css changes in class assignations
 
   var LAZY_LOAD_THRESHOLD = 300;
   var $ = document.querySelector.bind(document);
@@ -25,6 +29,13 @@ APP.Main = (function() {
   var main = $('main');
   var inDetails = false;
   var storyLoadCount = 0;
+  var mainOffsetHeight = main.offsetHeight;
+  var mainScrollHeight = main.scrollHeight;
+  var storyHeight = 0;
+  var mainScrolled = main.scrollTop;
+  var storiesOnScreen = 0;
+  var footerHeight = 40;
+
   var localeData = {
     data: {
       intl: {
@@ -32,6 +43,14 @@ APP.Main = (function() {
       }
     }
   };
+
+  function onWindowResize() {
+    mainOffsetHeight = main.offsetHeight;
+    if (storyHeight) {
+      storiesOnScreen = mainOffsetHeight / storyHeight;
+    }
+  }
+  window.addEventListener('resize', onWindowResize);
 
   var tmplStory = $('#tmpl-story').textContent;
   var tmplStoryDetails = $('#tmpl-story-details').textContent;
@@ -54,8 +73,15 @@ APP.Main = (function() {
       Handlebars.compile(tmplStoryDetails);
   var storyDetailsCommentTemplate =
       Handlebars.compile(tmplStoryDetailsComment);
+  var temlpateHtml = storyTemplate({
+    title: '...',
+    score: '-',
+    by: '...',
+    time: 0
+  });
 
   function onStoryData (key, details) {
+    storyLoadCount = 0;
     if (!key || !details) {
       return;
     }
@@ -63,14 +89,21 @@ APP.Main = (function() {
 
     details.time *= 1000;
     var html = storyTemplate(details);
-    requestAnimationFrame(function() {
+      var score = story.querySelector('.story__score');
+      var title = story.querySelector('.story__title');
+      var transform = score.style.transform;
+      var backgroundColor = score.style.backgroundColor;
+      var opacity = title.style.opacity;
       story.innerHTML = html;
       story.addEventListener('click', onStoryClick.bind(this, details));
       story.classList.add('clickable');
-    });
-    requestAnimationFrame(function() {
-      colorizeAndScaleStories();
-    });
+      if (backgroundColor !== 'rgb(255, 179, 0)' && opacity !== 1 && transform) {
+        score = story.querySelector('.story__score');
+        title = story.querySelector('.story__title');
+        score.style.backgroundColor = backgroundColor;
+        score.style.transform = transform;
+        title.style.opacity = opacity;
+      }
   }
 
   function onStoryClick(details) {
@@ -235,55 +268,53 @@ APP.Main = (function() {
     requestAnimationFrame(animate);
   }
   
+  function colorizeAndScaleStory(scale, saturation, opacity, score, title) {
+    score.style.transform = 'scale(' + scale + ')';
+    score.style.backgroundColor = 'hsl(42, ' + saturation + '%, 50%)';
+    title.style.opacity = opacity;
+  }
+  function calculateAndColorize(story, scoreLocation) {
+    var score = story.querySelector('.story__score');
+    var title = story.querySelector('.story__title');
+  
+    // Base the scale on the y position of the score.
+    var scale = Math.min(1, 1 - (0.05 * ((scoreLocation - 170) / mainOffsetHeight)));
+    var opacity = Math.min(1, 1 - (0.5 * ((scoreLocation - 170) / mainOffsetHeight)));
+    var saturation = (100 * (((scale * 40) - 38) / 2));
+    colorizeAndScaleStory(scale, saturation, opacity, score, title);
+  }
+
   function colorizeAndScaleStories() {
-
     var storyElements = document.querySelectorAll('.story');
-    var height = main.offsetHeight;
-    var windowHeight = (window.innerHeight || document.documentElement.clientHeight);
-    var bodyTop = document.body.getBoundingClientRect().top;
 
-    function colorizeAndScaleStory(scoreNewWidthAndHeight, saturation, opacity, score, title){
-      requestAnimationFrame(function() {
-        score.style.width = scoreNewWidthAndHeight + 'px';
-        score.style.height = scoreNewWidthAndHeight + 'px';
-        score.style.lineHeight = scoreNewWidthAndHeight + 'px';
-        score.style.backgroundColor = 'hsl(42, ' + saturation + '%, 50%)';
-        title.style.opacity = opacity;
-      });
+    var mainScrolledWithHeader = mainScrolled - footerHeight;
+    var storiesScrolled = Math.floor(mainScrolledWithHeader / storyHeight);
+    if (storiesScrolled < 0) {
+      storiesScrolled = 0;
     }
-    // It does seem awfully broad to change all the
-    // colors every time!
-    for (var s = 0; s < storyElements.length; s++) {
+    var reminder = mainScrolled % storyHeight;
 
-      var story = storyElements[s];
-      var score = story.querySelector('.story__score');
-      var scoreRect = score.getBoundingClientRect();
-      var isInView = (scoreRect.top <= windowHeight) && (scoreRect.bottom >= 0);
-      if(isInView) {
-        var title = story.querySelector('.story__title');
-      
-        // Base the scale on the y position of the score.
-        var scoreLocation = scoreRect.top - bodyTop;
-        var scale = opacity = Math.min(1, 1 - (0.05 * ((scoreLocation - 170) / height)));
-        var opacity = scale;
-        var scoreNewWidthAndHeight = (scale * 40);
-        var saturation = (100 * ((scoreNewWidthAndHeight - 38) / 2));
-        colorizeAndScaleStory(scoreNewWidthAndHeight, saturation, opacity, score, title);
-      }
+    for (var i = storiesScrolled, counter = 1;
+        i < storiesScrolled + storiesOnScreen;
+        i++, counter++) {
+      var story = storyElements[i];
+      var scoreLocation = storyHeight * counter + reminder;
+      calculateAndColorize(story, scoreLocation);
     }
   }
 
   main.addEventListener('scroll', function() {
+    mainScrolled = main.scrollTop;
 
     var header = $('header');
     requestAnimationFrame(colorizeAndScaleStories);
 
     // Add a shadow to the header.
-    if (main.scrollTop > 70){
+    if (mainScrolled > 70){
       header.classList.add('raised');
     } else {
       header.classList.remove('raised');
-      var scrollTopCapped = main.scrollTop;
+      var scrollTopCapped = mainScrolled;
       var scaleString = 'scale(' + (1 - (scrollTopCapped / 300)) + ')';
       var headerTitles = header.querySelector('.header__title-wrapper');
       headerTitles.style.webkitTransform = scaleString;
@@ -292,9 +323,9 @@ APP.Main = (function() {
     }
 
     // Check if we need to load the next batch of stories.
-    var loadThreshold = (main.scrollHeight - main.offsetHeight -
+    var loadThreshold = (mainScrollHeight - mainOffsetHeight -
         LAZY_LOAD_THRESHOLD);
-    if (main.scrollTop > loadThreshold)
+    if (mainScrolled > loadThreshold)
       loadStoryBatch();
   });
 
@@ -306,34 +337,39 @@ APP.Main = (function() {
     storyLoadCount = count;
 
     var end = storyStart + count;
+    if (end > stories.length) {
+      end = stories.length;
+    }
+
+    var fragment = document.createDocumentFragment();
     for (var i = storyStart; i < end; i++) {
-
-      if (i >= stories.length)
-        return;
-
       var key = String(stories[i]);
       var story = document.createElement('div');
       story.setAttribute('id', 's-' + key);
       story.classList.add('story');
-      story.innerHTML = storyTemplate({
-        title: '...',
-        score: '-',
-        by: '...',
-        time: 0
-      });
-      main.appendChild(story);
+      story.innerHTML = temlpateHtml;
+      fragment.appendChild(story);
+    }
+    main.appendChild(fragment);
+    mainScrollHeight = main.scrollHeight;
+    if(!storyHeight){
+      storyHeight = document.querySelector('.story').offsetHeight;
+      storiesOnScreen = Math.floor(mainOffsetHeight / storyHeight);
+    }
+    
+      colorizeAndScaleStories();
 
+    for (var i = storyStart; i < end; i++) {
+      var key = String(stories[i]);
       APP.Data.getStoryById(stories[i], onStoryData.bind(this, key));
     }
-
     storyStart += count;
-
   }
 
   // Bootstrap in the stories.
   APP.Data.getTopStories(function(data) {
+    main.classList.remove('loading');
     stories = data;
     loadStoryBatch();
-    main.classList.remove('loading');
   });
 })();
