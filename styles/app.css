@@ -153,6 +153,8 @@ main.loading {
   min-height: 90px;
   cursor: pointer;
   transition: all 0.4s ease-out;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .story:after {
