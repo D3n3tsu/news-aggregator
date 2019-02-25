@@ -117,6 +117,8 @@ main {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   z-index: 0;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 main.loading {
@@ -163,10 +165,6 @@ main.loading {
   border-bottom: 1px solid #dedede;
 }
 
-.story:nth-last-child(-n+1):after {
-  display: none;
-}
-
 .story__title {
   font-size: 20px;
   font-weight: 500;
@@ -198,10 +196,7 @@ main.loading {
   text-align: center;
   line-height: 40px;
 
-  box-shadow:
-      0px 2px 5px 0px rgba(0, 0, 0, 0.06),
-      0px 2px 5px 0px rgba(0, 0, 0, 0.08),
-      0px 2px 7px 0px rgba(0, 0, 0, 0.10);
+  box-shadow: 0px 2px 7px 0px rgba(0, 0, 0, 0.10);
 }
 
 .story-details {
@@ -232,10 +227,7 @@ main.loading {
   height: 100%;
   background: white;
   z-index: 2;
-  box-shadow:
-      0px 2px 5px 0px rgba(0, 0, 0, 0.06),
-      0px 2px 5px 0px rgba(0, 0, 0, 0.08),
-      0px 2px 7px 0px rgba(0, 0, 0, 0.10);
+  box-shadow: 0px 2px 7px 0px rgba(0, 0, 0, 0.10);
 
   overflow: hidden;
   transition: opacity 0.3s ease-out;
