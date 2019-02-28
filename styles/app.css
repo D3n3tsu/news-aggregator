@@ -117,8 +117,6 @@ main {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   z-index: 0;
-  will-change: transform;
-  transform: translateZ(0);
 }
 
 main.loading {

@@ -35,6 +35,7 @@ APP.Main = (function() {
   var mainScrolled = main.scrollTop;
   var storiesOnScreen = 0;
   var footerHeight = 40;
+  var storyElements;
 
   var localeData = {
     data: {
@@ -89,21 +90,22 @@ APP.Main = (function() {
 
     details.time *= 1000;
     var html = storyTemplate(details);
-      var score = story.querySelector('.story__score');
-      var title = story.querySelector('.story__title');
-      var transform = score.style.transform;
-      var backgroundColor = score.style.backgroundColor;
-      var opacity = title.style.opacity;
-      story.innerHTML = html;
-      story.addEventListener('click', onStoryClick.bind(this, details));
-      story.classList.add('clickable');
-      if (backgroundColor !== 'rgb(255, 179, 0)' && opacity !== 1 && transform) {
-        score = story.querySelector('.story__score');
-        title = story.querySelector('.story__title');
-        score.style.backgroundColor = backgroundColor;
-        score.style.transform = transform;
-        title.style.opacity = opacity;
-      }
+    var score = story.querySelector('.story__score');
+    var title = story.querySelector('.story__title');
+    var transform = score.style.transform;
+    var backgroundColor = score.style.backgroundColor;
+    var opacity = title.style.opacity;
+    story.innerHTML = html;
+    story.addEventListener('click', onStoryClick.bind(this, details));
+    story.classList.add('clickable');
+    if (backgroundColor !== 'rgb(255, 179, 0)' && opacity !== 1 && transform) {
+      score = story.querySelector('.story__score');
+      title = story.querySelector('.story__title');
+      score.style.backgroundColor = backgroundColor;
+      score.style.transform = transform;
+      title.style.opacity = opacity;
+    }
+    storyElements = document.querySelectorAll('.story');
   }
 
   function onStoryClick(details) {
@@ -285,8 +287,6 @@ APP.Main = (function() {
   }
 
   function colorizeAndScaleStories() {
-    var storyElements = document.querySelectorAll('.story');
-
     var mainScrolledWithHeader = mainScrolled - footerHeight;
     var storiesScrolled = Math.floor(mainScrolledWithHeader / storyHeight);
     if (storiesScrolled < 0) {
@@ -309,7 +309,6 @@ APP.Main = (function() {
     var header = $('header');
     requestAnimationFrame(colorizeAndScaleStories);
 
-    // Add a shadow to the header.
     if (mainScrolled > 70){
       header.classList.add('raised');
     } else {
@@ -323,8 +322,7 @@ APP.Main = (function() {
     }
 
     // Check if we need to load the next batch of stories.
-    var loadThreshold = (mainScrollHeight - mainOffsetHeight -
-        LAZY_LOAD_THRESHOLD);
+    var loadThreshold = (mainScrollHeight - mainOffsetHeight - LAZY_LOAD_THRESHOLD);
     if (mainScrolled > loadThreshold)
       loadStoryBatch();
   });
@@ -351,6 +349,7 @@ APP.Main = (function() {
       fragment.appendChild(story);
     }
     main.appendChild(fragment);
+    storyElements = document.querySelectorAll('.story');
     mainScrollHeight = main.scrollHeight;
     if(!storyHeight){
       storyHeight = document.querySelector('.story').offsetHeight;
