@@ -16,7 +16,6 @@
  */
 APP.Main = (function() {
 //note 
-// change height and width to transform
 // change data viaworkers
 // css changes in class assignations
 
@@ -114,42 +113,40 @@ APP.Main = (function() {
       return;
     }
     inDetails = true;
-    var storyDetails = $('#sd-' + details.id);
+    var storyDetails = $('.story-details');
 
     if (details.url) {
       details.urlobj = new URL(details.url);
     }
 
-    if (!storyDetails) {
-
-      var commentsElement;
-      var storyHeader;
-      var storyContent;
-
-      var storyDetailsHtml = storyDetailsTemplate(details);
-      var kids = details.kids;
-      var commentHtml = storyDetailsCommentTemplate({
-        by: '', text: 'Loading comment...'
-      });
-      
-      storyDetails = document.createElement('section');
-      storyDetails.classList.add('story-details');
-      storyDetails.innerHTML = storyDetailsHtml;
-      storyDetails.id = 'sd-' + details.id;
-
-      document.body.appendChild(storyDetails);
+    if(storyDetails && storyDetails.parentNode){
+      storyDetails.parentNode.removeChild(storyDetails);
     }
+    var commentsElement;
+    var storyHeader;
+    var storyContent;
 
+    var storyDetailsHtml = storyDetailsTemplate(details);
+    var kids = details.kids;
+    var commentHtml = storyDetailsCommentTemplate({
+      by: '', text: 'Loading comment...'
+    });
+    
+    storyDetails = document.createElement('section');
+    storyDetails.classList.add('story-details');
+    storyDetails.innerHTML = storyDetailsHtml;
+    storyDetails.id = 'sd-' + details.id;
+
+    document.body.appendChild(storyDetails);
+    
     commentsElement = storyDetails.querySelector('.js-comments');
     storyHeader = storyDetails.querySelector('.js-header');
     storyContent = storyDetails.querySelector('.js-content');
 
     var headerHeight = storyHeader.getBoundingClientRect().height;
-    requestAnimationFrame(function() {
-      storyContent.style.paddingTop = headerHeight + 'px';
-    });
+    storyContent.style.paddingTop = headerHeight + 'px';
     
-      requestAnimationFrame(showStory.bind(this, details.id));
+    requestAnimationFrame(showStory.bind(this, details.id));
 
     if (typeof kids === 'undefined')
       return;
@@ -183,47 +180,30 @@ APP.Main = (function() {
 
   function showStory(id) {
     var storyDetails = $('#sd-' + id);
-    var left = null;
 
     if (!storyDetails)
       return;
-
     document.body.classList.add('details-active');
-    storyDetails.style.opacity = 1;
+
+    var closeButton = storyDetails.querySelector('.js-close');
+    closeButton.addEventListener('click', hideStory.bind(this, id));
+
+    var maxwidth = document.documentElement.clientWidth;
+    var pixelsPerFrame = maxwidth / 60;
+    var left = 0;
 
     function animate () {
-
-      // Find out where it currently is.
-      var storyDetailsPosition = storyDetails.getBoundingClientRect();
-      var currentLeft = storyDetailsPosition.left;
-
-      // Set the left value if we don't have one already.
-      if (left === null)
-        left = currentLeft;
-
-      // Now figure out where it needs to go.
-      var leftDifference = currentLeft * 0.1;
-      if(leftDifference < 5){
-        leftDifference *= 1.5;
-      }
-      left -= leftDifference;
-
-      // Set up the next bit of the animation if there is more to do.
-      if (left > 1) {
-        requestAnimationFrame(function() {
-          storyDetails.style.left = left + 'px';
-          animate();
-        });
+      left += pixelsPerFrame;
+      if (left <= maxwidth) {
+          storyDetails.style.transform = 'translateX(-' + left + 'px)';
+          storyDetails.style.opacity = left / maxwidth;
+          requestAnimationFrame(animate);
       } else {
-        left = 0;
-        requestAnimationFrame(function() {
-          storyDetails.style.left = '0px';
-          var closeButton = storyDetails.querySelector('.js-close');
-          closeButton.addEventListener('click', hideStory.bind(this, id));
-        });
+        storyDetails.style.transform = 'translateX(-' + maxwidth + 'px)';
+        storyDetails.classList.add('opened');
       }
     }
-    requestAnimationFrame(animate);
+    animate();
   }
 
   function hideStory(id) {
@@ -232,42 +212,28 @@ APP.Main = (function() {
       return;
 
     var storyDetails = $('#sd-' + id);
+    var maxwidth = document.documentElement.clientWidth;
+    var pixelsPerFrame = maxwidth / 60;
     var left = 0;
 
     document.body.classList.remove('details-active');
+    storyDetails.classList.remove('opened');
 
     function animate () {
-
-      // Find out where it currently is.
-      var mainPosition = main.getBoundingClientRect();
-      var storyDetailsPosition = storyDetails.getBoundingClientRect();
-      var target = mainPosition.width + 100;
-      var currentLeft = storyDetailsPosition.left;
-
-      // Now figure out where it needs to go.
-      var leftDifference = target - currentLeft;
-      if (leftDifference > 500){
-        left += leftDifference * 0.1;
+      left += pixelsPerFrame;
+      if (left <= maxwidth) {
+        var diff = maxwidth - left;
+        storyDetails.style.transform = 'translateX(-' + diff + 'px)';
+        storyDetails.style.opacity = (diff)/maxwidth;
+        requestAnimationFrame(animate);
       } else {
-        left += 50;
-      }
-
-      // Set up the next bit of the animation if there is more to do.
-      if (left - target < 50) {
-        requestAnimationFrame(function() {
-          storyDetails.style.left = left + 'px';
-          storyDetails.style.opacity = (target - left)/target;
-          animate();
-        });
-      } else {
-        left = 0;
         inDetails = false;
         if(storyDetails.parentNode){
           storyDetails.parentNode.removeChild(storyDetails);
         }
       }
     }
-    requestAnimationFrame(animate);
+    animate();
   }
   
   function colorizeAndScaleStory(scale, saturation, opacity, score, title) {

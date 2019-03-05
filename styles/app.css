@@ -231,6 +231,7 @@ main.loading {
 
   overflow: hidden;
   transition: opacity 0.3s ease-out;
+  transition: left 1s;
 }
 
 .story-details * {
@@ -248,6 +249,12 @@ main.loading {
   -webkit-overflow-scrolling: touch;
 
   padding: 0 16px 72px 72px;
+  opacity: 0 !important;
+  transition: opacity 0.3s ease-in;
+}
+
+.story-details.opened .story-details__content {
+  opacity: 1 !important;
 }
 
 .story-details__title {
