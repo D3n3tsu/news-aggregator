@@ -146,12 +146,10 @@ APP.Main = (function() {
     var headerHeight = storyHeader.getBoundingClientRect().height;
     storyContent.style.paddingTop = headerHeight + 'px';
     
-    requestAnimationFrame(showStory.bind(this, details.id));
 
     if (typeof kids === 'undefined')
       return;
-
-    requestAnimationFrame(function() {
+    setTimeout(function(){
       var fragment = document.createDocumentFragment();
       for (var k = 0; k < kids.length; k++) {
         var comment = document.createElement('aside');
@@ -175,7 +173,9 @@ APP.Main = (function() {
         });
       }
       commentsElement.appendChild(fragment);
-    });
+    }, 1100);
+
+    showStory(details.id);
   }
 
   function showStory(id) {
@@ -187,23 +187,9 @@ APP.Main = (function() {
 
     var closeButton = storyDetails.querySelector('.js-close');
     closeButton.addEventListener('click', hideStory.bind(this, id));
-
-    var maxwidth = document.documentElement.clientWidth;
-    var pixelsPerFrame = maxwidth / 60;
-    var left = 0;
-
-    function animate () {
-      left += pixelsPerFrame;
-      if (left <= maxwidth) {
-          storyDetails.style.transform = 'translateX(-' + left + 'px)';
-          storyDetails.style.opacity = left / maxwidth;
-          requestAnimationFrame(animate);
-      } else {
-        storyDetails.style.transform = 'translateX(-' + maxwidth + 'px)';
-        storyDetails.classList.add('opened');
-      }
-    }
-    animate();
+    requestAnimationFrame(function() {
+      storyDetails.classList.add('opened');
+    });
   }
 
   function hideStory(id) {
@@ -212,13 +198,23 @@ APP.Main = (function() {
       return;
 
     var storyDetails = $('#sd-' + id);
-    var maxwidth = document.documentElement.clientWidth;
-    var pixelsPerFrame = maxwidth / 60;
-    var left = 0;
+    //var maxwidth = document.documentElement.clientWidth;
+    //var pixelsPerFrame = maxwidth / 60;
+    //var left = 0;
 
     document.body.classList.remove('details-active');
+    storyDetails.classList.add('closed');
     storyDetails.classList.remove('opened');
+    //storyDetails.style.transform = 'translateX(' + maxwidth + 'px)';
+    //storyDetails.style.opacity = 0;
+    inDetails = false;
+    setTimeout(function() {
+      if(storyDetails.parentNode){
+        storyDetails.parentNode.removeChild(storyDetails);
+      }
 
+    }, 1100);
+/*
     function animate () {
       left += pixelsPerFrame;
       if (left <= maxwidth) {
@@ -233,7 +229,7 @@ APP.Main = (function() {
         }
       }
     }
-    animate();
+    animate();*/
   }
   
   function colorizeAndScaleStory(scale, saturation, opacity, score, title) {

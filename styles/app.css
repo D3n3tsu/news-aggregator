@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-* {
+/* * {
   box-sizing: border-box;
-}
+} */
 
 html, body {
   padding: 0;
@@ -95,17 +95,19 @@ a {
 body.details-active .story__title,
 body.details-active .story__by,
 body.details-active .story__score {
+  will-change: transform;
   transition: opacity 0.5s ease-out;
   opacity: 0 !important;
 }
 
 body.details-active .story {
-  background: linear-gradient(to bottom, #FFF 0%, #FFF 100%);
+  background: #FFF;
+  /* transition: opacity 0.5s ease-out;
+  opacity: 0 !important; */
 }
 
-body.raised .header {
-  box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.16),
-      0px 2px 5px 0px rgba(0, 0, 0, 0.23);
+body .raised.header {
+  box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.23);
 }
 
 main {
@@ -145,7 +147,6 @@ main.loading {
 
 .story {
   padding: 16px 16px 16px 72px;
-  background: #FFF;
   background: linear-gradient(to bottom, #FFF 0%,#F4F4F4 100%);
   position: relative;
   min-height: 90px;
@@ -153,9 +154,11 @@ main.loading {
   transition: all 0.4s ease-out;
   will-change: transform;
   transform: translateZ(0);
+  border-bottom: 1px solid #dedede;
+  box-sizing: border-box;
 }
 
-.story:after {
+/* .story:after {
   display: block;
   content: '';
   width: 100%;
@@ -163,7 +166,7 @@ main.loading {
   left: 0;
   bottom: 0;
   border-bottom: 1px solid #dedede;
-}
+} */
 
 .story__title {
   font-size: 20px;
@@ -219,19 +222,18 @@ main.loading {
       -webkit-align-content: stretch;
           align-content: stretch;
 
-  opacity: 0;
+  /*opacity: 0; */
   position: fixed;
   top: 0;
-  left: 100%;
+  transform: translateX(100%);
   width: 100%;
   height: 100%;
   background: white;
   z-index: 2;
-  box-shadow: 0px 2px 7px 0px rgba(0, 0, 0, 0.10);
+  /* box-shadow: 0px 2px 7px 0px rgba(0, 0, 0, 0.10); */
 
   overflow: hidden;
-  transition: opacity 0.3s ease-out;
-  transition: left 1s;
+  transition: transform 1s;/* opacity 1s ease-out, */
 }
 
 .story-details * {
@@ -249,12 +251,25 @@ main.loading {
   -webkit-overflow-scrolling: touch;
 
   padding: 0 16px 72px 72px;
-  opacity: 0 !important;
-  transition: opacity 0.3s ease-in;
+  opacity: 0;
+  transition: opacity 0.3s ease-in 1.1s;
+}
+
+.story-details.opened {
+  will-change: transform;
+  transform: translateX(0px);
+  opacity: 1 !important;
 }
 
 .story-details.opened .story-details__content {
-  opacity: 1 !important;
+  will-change: transform;
+  opacity: 1;
+}
+
+.story-details.closed .story-details__content {
+  will-change: transform;
+  opacity: 0;
+  transition: opacity 0.1s ease;
 }
 
 .story-details__title {
@@ -294,7 +309,6 @@ main.loading {
   margin-top: -48px;
   background: url(../images/ic_close_24px.svg) center center no-repeat;
   border: none;
-  text-indent: -10000px;
   border-radius: 0;
 }
 
@@ -346,6 +360,9 @@ footer {
   color: #888;
   text-align: center;
   line-height: 40px;
+  
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 footer a {
