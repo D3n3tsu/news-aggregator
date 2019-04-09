@@ -15,9 +15,6 @@
  * limitations under the License.
  */
 APP.Main = (function() {
-//note 
-// change data viaworkers
-// css changes in class assignations
 
   var LAZY_LOAD_THRESHOLD = 300;
   var $ = document.querySelector.bind(document);
@@ -59,26 +56,54 @@ APP.Main = (function() {
   if (typeof HandlebarsIntl !== 'undefined') {
     HandlebarsIntl.registerWith(Handlebars);
   } else {
-
-    // Remove references to formatRelative, because Intl isn't supported.
     var intlRelative = /, {{ formatRelative time }}/;
     tmplStory = tmplStory.replace(intlRelative, '');
     tmplStoryDetails = tmplStoryDetails.replace(intlRelative, '');
     tmplStoryDetailsComment = tmplStoryDetailsComment.replace(intlRelative, '');
   }
 
-  var storyTemplate =
-      Handlebars.compile(tmplStory);
-  var storyDetailsTemplate =
-      Handlebars.compile(tmplStoryDetails);
-  var storyDetailsCommentTemplate =
-      Handlebars.compile(tmplStoryDetailsComment);
-  var temlpateHtml = storyTemplate({
+  var storyTemplate = Handlebars.compile(tmplStory);
+  var storyDetailsTemplate = Handlebars.compile(tmplStoryDetails);
+  var storyDetailsCommentTemplate = Handlebars.compile(tmplStoryDetailsComment);
+  var emptyConfig = {
     title: '...',
     score: '-',
     by: '...',
     time: 0
-  });
+  };
+  var temlpateHtml = storyTemplate(emptyConfig);
+
+  function applyInitialStylesToTemplate(story, initialStyles) {
+    var score = story.querySelector('.story__score');
+    var title = story.querySelector('.story__title');
+    score.style.backgroundColor = initialStyles.backgroundColor;
+    score.style.transform = initialStyles.transform;
+    title.style.opacity = initialStyles.opacity;
+  }
+
+  function getInitialStyles(story) {
+    var score = story.querySelector('.story__score');
+    var title = story.querySelector('.story__title');
+    return {
+      transform: score.style.transform,
+      backgroundColor: score.style.backgroundColor,
+      opacity: title.style.opacity
+    }
+  }
+
+  function stylesWereModified(initialStyles) {
+    var defaultBackgroundColor = 'rgb(255, 179, 0)';
+    return initialStyles.backgroundColor !== defaultBackgroundColor
+      && initialStyles.opacity !== 1
+      && initialStyles.transform;
+  }
+  function fillStoryWithDetails(story, details) {
+    details.time *= 1000;
+    var html = storyTemplate(details);
+    story.innerHTML = html;
+    story.addEventListener('click', onStoryClick.bind(this, details));
+    story.classList.add('clickable');
+  }
 
   function onStoryData (key, details) {
     storyLoadCount = 0;
@@ -86,23 +111,10 @@ APP.Main = (function() {
       return;
     }
     var story = document.querySelector('#s-' + key);
-
-    details.time *= 1000;
-    var html = storyTemplate(details);
-    var score = story.querySelector('.story__score');
-    var title = story.querySelector('.story__title');
-    var transform = score.style.transform;
-    var backgroundColor = score.style.backgroundColor;
-    var opacity = title.style.opacity;
-    story.innerHTML = html;
-    story.addEventListener('click', onStoryClick.bind(this, details));
-    story.classList.add('clickable');
-    if (backgroundColor !== 'rgb(255, 179, 0)' && opacity !== 1 && transform) {
-      score = story.querySelector('.story__score');
-      title = story.querySelector('.story__title');
-      score.style.backgroundColor = backgroundColor;
-      score.style.transform = transform;
-      title.style.opacity = opacity;
+    var initialStyles = getInitialStyles(story);
+    fillStoryWithDetails(story, details);
+    if (stylesWereModified(initialStyles)) {
+      applyInitialStylesToTemplate(story, initialStyles);
     }
     storyElements = document.querySelectorAll('.story');
   }
