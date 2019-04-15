@@ -293,7 +293,6 @@ main.loading {
 .story-details__header {
   padding: 16px 16px 64px 72px;
   background: #FFA000;
-  position: absolute;
   left: 0;
   top: 0;
   width: 100%;
