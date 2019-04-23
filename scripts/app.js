@@ -34,7 +34,10 @@ APP.Main = (function() {
   var storyElements;
   var header = $('header');
   var headerTitles = header.querySelector('.header__title-wrapper');
-
+  var tmplStory = $('#tmpl-story').textContent;
+  var tmplStoryDetails = $('#tmpl-story-details').textContent;
+  var tmplStoryDetailsComment = $('#tmpl-story-details-comment').textContent;
+  
   var localeData = {
     data: {
       intl: {
@@ -53,11 +56,6 @@ APP.Main = (function() {
       setStoriesOnScreen();
     }
   }
-  window.addEventListener('resize', onWindowResize);
-
-  var tmplStory = $('#tmpl-story').textContent;
-  var tmplStoryDetails = $('#tmpl-story-details').textContent;
-  var tmplStoryDetailsComment = $('#tmpl-story-details-comment').textContent;
 
   if (typeof HandlebarsIntl !== 'undefined') {
     HandlebarsIntl.registerWith(Handlebars);
@@ -210,7 +208,7 @@ APP.Main = (function() {
     });
   }
 
-  function deleteStoryDetails() {
+  function deleteStoryDetails(storyDetails) {
     if(storyDetails.parentNode){
       storyDetails.parentNode.removeChild(storyDetails);
     }
@@ -225,7 +223,7 @@ APP.Main = (function() {
     document.body.classList.remove('details-active');
     storyDetails.classList.add('closed');
     storyDetails.classList.remove('opened');
-    setTimeout(deleteStoryDetails, 1100);
+    setTimeout(deleteStoryDetails.bind(this, storyDetails), 1100);
   }
   
   function colorizeAndScaleStory(scale, saturation, opacity, score, title) {
@@ -375,6 +373,7 @@ APP.Main = (function() {
     setNewStoryStartFromCount();
   }
 
+  window.addEventListener('resize', onWindowResize);
   calculateMainScrolled();
   setMainScrollHeight();
   main.addEventListener('scroll', onScroll);
